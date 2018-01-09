@@ -1,0 +1,2 @@
+//View Utility of Nvidia//
+$ nvidia-smi -q -x

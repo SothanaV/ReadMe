@@ -1,0 +1,6 @@
+flask
+flask-socketio
+django-widget-tweaks
+django-crispy-forms
+channels
+asgi_redis

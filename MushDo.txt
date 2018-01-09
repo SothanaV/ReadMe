@@ -1,0 +1,16 @@
+samba
+Project 
+Netpie github
+httpClient Requset : https://l.facebook.com/l.php?u=https%3A%2F%2Fgithub.com%2Fesp8266%2FArduino%2Fblob%2Fmaster%2Flibraries%2FESP8266HTTPClient%2Fexamples%2FBasicHttpClient%2FBasicHttpClient.ino&h=-AQGTxDMm
+??????????????????
+https://github.com/wasit7/tutorials/tree/master/bidirectional
+https://drive.google.com/drive/u/1/folders/0B73QxxP6MuC-fmNVdE5acmJKOUtfVmVXZVZHdldTcm1jNmZ0c1F1VExsX2JsZy1xVmhOczQ
+-------------------------------------------------------------------------------------
+ip Server
+Ubuntu 10.100.20.228 and 10.100.20.234
+Titan 10.100.20.204, 10.200.20.51, 112.121.136.51 port 8000
+Lable 10.100.20.217 Port 8000
+10.153.36.1
+Window 10.100.20.195
+Fx 10.100.20.239
+

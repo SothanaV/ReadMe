@@ -1,0 +1,66 @@
+ls 	:list
+ls -l  	:list line
+ls -a 	:list hidden file
+ls -h 	:list file in human so convert unit to human
+
+ip addr	:list ip addrest and name interface
+ifconfig:ipconfig in window
+
+man	:mannual to ...
+		-ex man ls = show manual ls
+touch	:show update file
+
+vim	: text editer 
+	D = delete 
+	W = word
+	Esc = exit
+	w = write
+
+cp 	:copy
+cp -r 	:copy directtory
+mv	:move
+
+scp	:ssh copy client to server or server to cilent
+pwd     :print name currect directory
+tree	:show tree of directory
+
+cd 	:change directory
+cd - 	:back(undo this)
+
+echo	: comment
+less 	:view file 
+	^G : on top
+dd if=[part in put] of=[part output or name]
+udisksctl mount -b /part
+
+________________________________________________
+Docker
+
+$ sudo docker run -it --rm -v $(pwd):/code django bash
+$ cd code
+$ django-admin startproject [Nameproject]
+$ exit
+$ cd [project]
+Edit in
+	Setting.py => Edit  add in Install_app	//Add app Name
+$ cd /home
+$ sudo docker run -t --rm -p 0.0.0.0:5001:5000 -v $(pwd):/code -w /code/naii django python manage.py runserver 0.0.0.0:5000
+$ sudo docker build .
+$ sudo docker images
+$ sudo docker run -it -p 0.0.0.0:5001:8000 [KEY]
+$ sudo docker-compose up
+------------------------------
+$ sudo docker ps
+$ sudo docker stop [name]
+$ sudo docker rm [name]
+-----------------------------
+change owner
+$ sudo chown -R naii:naii [folder]
+-----------------------------
+
+
+
+
+
+
+
