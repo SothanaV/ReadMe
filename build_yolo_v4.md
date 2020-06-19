@@ -3,4 +3,6 @@
     $ sudo apt-get install libopencv-core-dev
 #
 ## build
-    $ git clone 
+    $ git clone https://github.com/AlexeyAB/darknet.git
+    # edit Makefile
+    $ make
