@@ -1,4 +1,6 @@
 # SAMBA_SERVER
+share file on linux
+แชร์ไฟล์จาก linux
 ## Install
 	$ sudo apt install samba
 
