@@ -1,3 +1,0 @@
-Starting For UbuntuMate on RaspberryPi
-$ sudo dpkg --configure -a
-$ sudo apt-get -f install
