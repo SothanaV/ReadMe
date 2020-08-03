@@ -23,3 +23,7 @@
 
 
     ./stack.sh
+
+##user
+    user = admin / demo
+    pass = StrongAdminSecret
