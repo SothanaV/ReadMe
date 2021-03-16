@@ -2,7 +2,7 @@
 
 install packet
 ```
-pip install django-extensions
+pip install django-extensions pydotplus
 ```
 
 edit in settings.py
