@@ -31,3 +31,8 @@ volumes:
     - ./jupyter_notebook_config.json:/config/jupyter_notebook_config.json
     ...
 ```
+
+## set command
+```
+jupyter notebook --allow-root --no-browser --ip=* --config=/config/jupyter_notebook_config.json
+```
