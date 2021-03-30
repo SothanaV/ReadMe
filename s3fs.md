@@ -8,7 +8,7 @@ sudo apt install s3fs
 -  set IAM Role with Full Access to S3 #aws
 - install aws cli
 ```
-apt install awscli
+sudo apt install awscli
 ```
 -  create/get user Full Access to S3 creadential
 ```
@@ -23,7 +23,7 @@ mkdir -p <dir>
 
 - create s3 bucket
 ```
-aws s3 mb s3://<bucketname>
+aws s3 mb s3://<bucketname> --region ap-southeast-1
 ```
 - edit /etc/fuse.conf
 ```
@@ -33,7 +33,7 @@ user_allow_other
 ```
 - mount s3 file system
 ```
-s3fs <bucketname> <dir> -o allow_other -o nonempty
+s3fs <bucketname> <dir> -o allow_other -o nonempty -o use_path_request_style -o url=https://s3-{{aws_region}}.amazonaws.com
 ```
 
 # additional command
