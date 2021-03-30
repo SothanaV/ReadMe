@@ -31,7 +31,14 @@ sudo nano /etc/fuse.conf
 # un comment 
 user_allow_other
 ```
-
+- mount s3 file system
 ```
 s3fs <bucketname> <dir> -o allow_other -o nonempty
+```
+
+# additional command
+
+```
+# unmount 
+umount -l <path>
 ```
