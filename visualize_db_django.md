@@ -1,5 +1,19 @@
 # Visuzlize database schema django
 
+install graphviz
+1. install native ubuntu/linuk
+```
+sudo apt install graphviz
+```
+
+2. add this in Dockerfile
+
+```dockerfile
+...
+RUN apt install -y graphviz
+...
+```
+
 install packet
 ```
 pip install django-extensions pydotplus
