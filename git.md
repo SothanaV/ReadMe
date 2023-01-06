@@ -33,3 +33,9 @@
     # New branch / แตกbranchใหม่
     git checkout -b <branch name / ชื่อbranch>
 
+## git cache credentials
+```
+git config credential.helper store
+```
+
+ref : https://stackoverflow.com/questions/5343068/is-there-a-way-to-cache-https-credentials-for-pushing-commits
