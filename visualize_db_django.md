@@ -1,7 +1,7 @@
 # Visuzlize database schema django
 
 install graphviz
-1. install native ubuntu/linuk
+1. install native ubuntu/linux
 ```
 sudo apt install graphviz
 ```
