@@ -7,7 +7,7 @@ conda deactivate
 ```
 1. create env on path `~/work/conda-env/`
 ```
-conda create -p ~/work/conda-env/<ENV_NAME>
+conda create -p ~/work/conda-env/<ENV_NAME> python=3.x
 ```
 2. activate env using path
 ```
