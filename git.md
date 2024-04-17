@@ -39,3 +39,8 @@ git config credential.helper store
 ```
 
 ref : https://stackoverflow.com/questions/5343068/is-there-a-way-to-cache-https-credentials-for-pushing-commits
+
+## git disable vim mode
+```
+git config --global pager.branch 'false'
+```
