@@ -1,7 +1,7 @@
 # K3S move data
 
 master
-```
+```bash
 systemctl status k3s
 
 systemctl stop k3s

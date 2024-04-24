@@ -12,16 +12,16 @@ apt-get install gcsfuse
 ### config mount gcsfuse to local path
 ```bash
 export GOOGLE_APPLICATION_CREDENTIALS=/home/serveradmin/dsm-data-platform-114e64663484.json
-mkdir /mnt/google-bucket
+mkdir /var/lib/bucket
 
-gcsfuse -o allow_other --dir-mode 777 --file-mode 777 dsm-data-platform /mnt/google-bucket
+gcsfuse -o allow_other --dir-mode 777 --file-mode 777 dsm-data-platform /var/lib/bucket
 ```
 
 
 # map longhorn to nfs gcs
 ```bash
-mkdir /mnt/google-bucket/longhorn/$(hostname)
-ln -s /mnt/google-bucket/longhorn/$(hostname)/ /var/lib/longhorn
+mkdir /var/lib/bucket/longhorn/$(hostname)
+ln -rs /var/lib/bucket/longhorn/$(hostname)/ /var/lib/longhorn
 ```
 
 ### unmount 
