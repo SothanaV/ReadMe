@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: dnsutils
+spec:
+  selector:
+    matchLabels:
+      name: dnsutils
+  template:
+    metadata:
+      labels:
+        name: dnsutils
+    spec:
+      containers:
+      - name: dnsutils
+        image: sothanaii/network-tools
+        imagePullPolicy: Always
