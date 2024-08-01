@@ -129,3 +129,5 @@ test_vec = [1,2,3,3]
 data = session.query(Embedding).order_by(Embedding.data.l2_distance(test_vec)).all()
 print(data) 
 ```
+
+# Optimize
