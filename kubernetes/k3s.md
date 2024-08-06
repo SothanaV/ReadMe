@@ -29,5 +29,14 @@ k3s server \
 
 5. stop step4 and start normal k3s
 ```
-system start k3s
+systemctl start k3s
+```
+
+### adjust limit 
+```bash
+ExecStart=/usr/local/bin/k3s \
+    ...
+    '--kubelet-arg=eviction-hard=memory.available<500Mi,nodefs.available<10%' \
+    '--kubelet-arg=eviction-soft=memory.available<1Gi,nodefs.available<15%' \
+    '--kubelet-arg=eviction-soft-grace-period=memory.available=1m30s,nodefs.available=1m30s' \
 ```
