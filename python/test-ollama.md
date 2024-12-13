@@ -58,3 +58,15 @@ if __name__ == "__main__":
     print("-"*20)
     print(f"Average Token Per sec : {sum(tps)/len(tps):.2f}")
 ```
+
+- output like this
+```bash
+root@7188c2c50eab:/backend# python test-ollama.py 
+Total Tokens: 531	Total Duration (seconds): 24.75	Tokens per Second: 21.46
+Total Tokens: 340	Total Duration (seconds): 11.29	Tokens per Second: 30.13
+Total Tokens: 456	Total Duration (seconds): 15.16	Tokens per Second: 30.07
+Total Tokens: 464	Total Duration (seconds): 15.47	Tokens per Second: 29.99
+Total Tokens: 525	Total Duration (seconds): 17.44	Tokens per Second: 30.11
+--------------------
+Average Token Per sec : 28.35
+```
