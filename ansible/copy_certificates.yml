@@ -1,0 +1,23 @@
+- name: Copy certificates and update CA certificates
+  hosts: servers  # Replace with your inventory group or server
+  become: yes  # Run tasks as root
+  tasks:
+    - name: Copy certificate files
+      copy:
+        src: "{{ item }}"
+        dest: "/usr/local/share/ca-certificates/"
+        owner: root
+        group: root
+        mode: '0644'
+      loop:
+        - cert/xx.crt
+        - cert/yy.crt
+        - cert/zz.crt
+
+    - name: Update CA certificates
+      command: update-ca-certificates
+      register: update_output
+
+    - name: Show update output
+      debug:
+        var: update_output.stdout

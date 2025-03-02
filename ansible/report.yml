@@ -1,0 +1,33 @@
+---
+- name: Collect system report from servers
+  hosts: servers
+  gather_facts: false
+  tasks:
+    - name: Generate system report
+      shell: |
+        hostname > /tmp/report.txt && \
+        echo "========== CPU ==========" >> /tmp/report.txt && \
+        lscpu 2>&1 | head -5 >> /tmp/report.txt && \
+        echo "========== MEMORY ==========" >> /tmp/report.txt && \
+        free -h >> /tmp/report.txt && \
+        echo "========== DISK ==========" >> /tmp/report.txt && \
+        df -h 2>&1 | head -5 >> /tmp/report.txt && \
+        echo "========== OS ==========" >> /tmp/report.txt && \
+        lsb_release -a >> /tmp/report.txt && \
+        cat /tmp/report.txt
+      register: report_output
+
+    - name: create report dir to local machine
+      delegate_to: localhost
+      become: false
+      file:
+        path: "./reports"
+        state: directory
+        mode: '0755'
+
+    - name: Save report to local machine
+      delegate_to: localhost
+      become: false
+      copy:
+        content: "{{ report_output.stdout }}"
+        dest: "./reports/{{ inventory_hostname }}_report.txt"
