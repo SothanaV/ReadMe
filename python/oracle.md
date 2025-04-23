@@ -12,11 +12,11 @@ unzip instantclient-basic-linuxx64.zip
 - move to `/opt/oracle/`
 ```
 sudo mkdir -p /opt/oracle
-sudo mv instantclient-basic-linuxx64.zip /opt/oracle/
+sudo mv instantclient_23_7 /opt/oracle/
 ```
 - config
 ```
-sudo sh -c "echo /opt/oracle/instantclient_23_6 > /etc/ld.so.conf.d/oracle-instantclient.conf"
+sudo sh -c "echo /opt/oracle/instantclient_23_7 > /etc/ld.so.conf.d/oracle-instantclient.conf"
 sudo ldconfig
 ```
 - install `libaio`
