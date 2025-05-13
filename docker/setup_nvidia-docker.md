@@ -44,3 +44,22 @@ sudo systemctl restart docker
 ```bash
 sudo docker run --rm --gpus all nvidia/cuda:12.6.3-base-ubuntu24.04 nvidia-smi
 ```
+
+- update config `/etc/docker/daemon.json`
+  - update config
+  ```json
+  {
+      "runtimes": {
+          "nvidia": {
+              "args": [],
+              "path": "nvidia-container-runtime"
+          }
+      },
+      ...
+      "exec-opts": ["native.cgroupdriver=cgroupfs"] // <- this line
+  }
+  ```
+  - reboot docker
+  ```
+  sudo systemctl restart docker
+  ```
