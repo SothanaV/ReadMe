@@ -236,3 +236,17 @@ images:
 ![airflow-ui](/_asset/airflow-ui.png)
 
 ![airflow-k3s](/_asset/airflow-k3s.png)
+
+### If have permission problem
+add webserver and scheduler deployment
+```yml
+initContainers:
+  - name: fix-log-permissions
+    image: busybox
+    command: ["sh", "-c", "chown -R 50000:1001 /opt/airflow/logs"]
+    volumeMounts:
+      - name: logs
+        mountPath: /opt/airflow/logs
+    securityContext:
+      runAsUser: 0 # run as root to change ownership
+```
