@@ -86,7 +86,7 @@ venv_cache_path = "/home/airflow/venv/"
 project_path = "/opt/airflow/dags"
 env = "local"
 conf_source = "/opt/airflow/dags/conf"
-package_name = "etl_pipeline"
+package_name = "{{ package_name }}"
 pipeline_name = "{{ pipeline_name }}"
 
         
