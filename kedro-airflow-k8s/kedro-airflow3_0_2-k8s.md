@@ -257,9 +257,9 @@ dagProcessor:
     ...
     ```
 
-![airflow-ui](/_asset/airflow-ui.png)
+![airflow-ui](/_asset/airflowv3-ui.png)
 
-![airflow-k3s](/_asset/airflow-k3s.png)
+![airflow-k3s](/_asset/airflowv3-k3s.png)
 
 ### If have permission problem
 add webserver and scheduler deployment
