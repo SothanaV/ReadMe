@@ -1,4 +1,9 @@
 # Install airflow kedro
+
+- kedro 
+- airflow 2.4.1
+- k8s
+
 ```
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 helm repo add apache-airflow https://airflow.apache.org
