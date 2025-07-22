@@ -21,7 +21,7 @@ lazy_object_proxy==1.11.0
 
 2. create `Dockerfile`
 ```Dockerfile
-FROM apache/airflow:slim-2.10.5-python3.12
+FROM apache/airflow:slim-3.0.2-python3.12
 
 USER root
 RUN apt-get update --fix-missing && \
