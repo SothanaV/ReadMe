@@ -142,12 +142,18 @@ with DAG(
     {% endfor %}
 ```
 
-4. create DAG
+4. install kedro airflow
+```
+pip install kedro-airflow
+```
+5. create DAG
 ```
 kedro airflow create --target-dir ./airflow_dags/ --jinja-file ./dags-template.j2 --pipeline <PIPELINE_NAME>
 ```
 
-5. build docker image
+6. build docker image
+  - manual build
+  - ci/cd
 
 
 ## deploy on k8s using helm
