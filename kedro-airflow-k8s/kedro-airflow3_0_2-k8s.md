@@ -280,3 +280,133 @@ initContainers:
     securityContext:
       runAsUser: 0 # run as root to change ownership
 ```
+
+### Email Aleart
+- edit `dags-template.j2`
+```
+from __future__ import annotations
+
+from datetime import datetime, timedelta
+from pathlib import Path
+
+from airflow import DAG
+from airflow.operators.python import ExternalPythonOperator
+from airflow.models import Variable
+
+from dsm_services.airflow import utils as email_utils
+import dsmemail
+
+DSM_EMAIL_URI = Variable.get("DSM_EMAIL_URI", default_var="https://email-service.data.storemesh.com", deserialize_json=False) 
+DSM_EMAIL_APIKEY = Variable.get("DSM_EMAIL_APIKEY", default_var="API_KEY", deserialize_json=False)
+SITE_NAME = Variable.get("SITE_NAME", default_var='', deserialize_json=False)
+ALERT_EMAILS = Variable.get("ALERT_EMAILS", default_var='[]', deserialize_json=True)
+
+def task_failure_alert(context):
+    print(context)
+    print(ALERT_EMAILS)
+
+    subject, body = email_utils.create_notice_email(site_name=SITE_NAME, context=context)
+    status = dsmemail.sendEmail(
+        subject=subject, 
+        message=body, 
+        emails=ALERT_EMAILS,
+        host=DSM_EMAIL_URI,
+        api_key=DSM_EMAIL_APIKEY
+    )
+    print(status)
+
+def kedro_run(
+    package_name: str,
+    pipeline_name: str,
+    node_name: str | list[str],
+    project_path: str,
+    env: str,
+    conf_source: str,
+    **kwargs
+):
+    from kedro.framework.session import KedroSession
+    from kedro.framework.project import configure_project
+    from kedro.framework.startup import bootstrap_project
+
+    print(f"kwargs : {kwargs}")
+
+    print("bootstrap_project")
+    bootstrap_project(project_path)
+    print("bootstrap_project done")
+
+    configure_project(package_name)
+    session = KedroSession.create(
+        project_path, 
+        env=env, 
+        conf_source=conf_source,
+        extra_params={
+            'etl_date': kwargs['ds']
+        }
+    )
+    if isinstance(node_name, str):
+        node_name = [node_name]
+    session.run(pipeline_name, node_names=node_name)
+
+venv_cache_path = "/home/airflow/venv/"
+project_path = "/opt/airflow/dags"
+env = "local"
+conf_source = "/opt/airflow/dags/conf"
+package_name = "{{ package_name }}"
+pipeline_name = "{{ pipeline_name }}"
+
+        
+with DAG(
+    dag_id="{{ pipeline_name | safe | slugify }}",
+    start_date=datetime({{ start_date | default([2023, 1, 1]) | join(",")}}),
+    max_active_runs={{ max_active_runs | default(3) }},
+    # https://airflow.apache.org/docs/stable/scheduler.html#dag-runs
+    schedule="{{ schedule_interval | default('@once') }}",
+    catchup={{ catchup | default(False) }},
+    # Default settings applied to all tasks
+    default_args=dict(
+        owner="{{ owner | default('airflow') }}",
+        depends_on_past={{ depends_on_past | default(False) }},
+        email_on_failure={{ email_on_failure | default(False) }},
+        email_on_retry={{ email_on_retry | default(False) }},
+        retries={{ retries | default(1) }},
+        retry_delay=timedelta(minutes={{ retry_delay | default(5) }}),
+        on_failure_callback=task_failure_alert
+    )
+) as dag:
+    tasks = {
+    {% for group, data in node_objs.items() %}
+        "{{ data.name | slugify }}": ExternalPythonOperator(
+            task_id="{{ data.name | slugify }}",
+            python_callable=kedro_run,
+            python="/home/airflow/venv/bin/python",
+            op_kwargs={
+                "package_name": package_name,
+                "pipeline_name": pipeline_name,
+                "node_name": {% if data.nodes | length > 1 %}[{% endif %}{% for node in data.nodes %}"{{ node.name }}"{% if not loop.last %}, {% endif %}{% endfor %}{% if data.nodes | length > 1 %}]{% endif %},
+                "project_path": project_path,
+                "env": env,
+                "conf_source": conf_source,
+            }
+        ){% if not loop.last %},{% endif %}
+    {% endfor %}
+    }
+
+    {% for group, data in node_objs.items() %}
+    {% for dep in data.dependencies %}
+    tasks["{{ dep | slugify }}"] >> tasks["{{ data.name | slugify }}"]
+    {% endfor %}
+    {% endfor %}
+```
+- update `requirements-airflow.txt`
+```
+...
+dsmemail==0.0.7
+dsm-services==0.0.13
+...
+```
+
+- add airflow variable
+  - SITE_NAME [str] : Site name for email title
+  - DSM_EMAIL_URI [str] : https://email-service.data.storemesh.com
+  - DSM_EMAIL_APIKEY [str] : ApiKey for dsm email services
+  - ALERT_EMAILS [array[str]] : Email for notice if pipeline error eg ["sothana@mail.com"]
