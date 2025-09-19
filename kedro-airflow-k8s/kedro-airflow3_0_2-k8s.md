@@ -92,7 +92,8 @@ def kedro_run(
         node_name = [node_name]
     session.run(pipeline_name, node_names=node_name)
 
-venv_cache_path = "/home/airflow/venv/"
+venv_cache_path = "/home/airflow/venv"
+venv_python_path = f"{venv_cache_path}/bin/python"
 project_path = "/opt/airflow/dags"
 env = "local"
 conf_source = "/opt/airflow/dags/conf"
@@ -122,7 +123,7 @@ with DAG(
         "{{ data.name | slugify }}": ExternalPythonOperator(
             task_id="{{ data.name | slugify }}",
             python_callable=kedro_run,
-            python="/home/airflow/venv/bin/python",
+            python=venv_python_path,
             op_kwargs={
                 "package_name": package_name,
                 "pipeline_name": pipeline_name,
