@@ -101,3 +101,33 @@ AUTH_USER_REGISTRATION_ROLE = "Admin"
             mountPath: /opt/airflow/webserver_config.py
             subPath: webserver_config.py
     ```
+
+# Error
+if error like this
+```
+ File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/fab/auth_manager/models/__init__.py", line 287, in perms
+    (perm.action.name, perm.resource.name) for role in self.roles for perm in role.permissions
+     ^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'name'
+```
+
+```python
+import pandas as pd
+import psycopg2
+con = "postgresql://postgres:postgres@airflow-postgresql.airflow:5432"
+
+# check permission None
+pd.read_sql_query("""
+SELECT * FROM ab_permission_view
+WHERE permission_id IS NULL
+""", con)
+
+# delete row has None
+conn = psycopg2.connect(con)
+cur = conn.cursor()
+cur.execute("""
+DELETE FROM ab_permission_view
+WHERE permission_id IS NULL
+""")
+conn.commit()
+```
