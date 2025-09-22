@@ -1,4 +1,10 @@
 # Airflow config auth via Oauth
+0. install package
+```
+apache-airflow-providers-fab==2.4.2
+Authlib==1.6.4
+Flask-Limiter==3.12
+```
 1. register application on oauth
     - create app
     - get app id
