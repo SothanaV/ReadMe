@@ -195,6 +195,8 @@ APP VERSION must be align docker image
 
 3. create airflow-values.yml
 ```yml
+airflowVersion: "3.0.6"
+defaultAirflowTag: "3.0.6"
 executor: KubernetesExecutor
 registry:
   secretName: gitlab
@@ -205,7 +207,9 @@ logs:
 securityContext:
   runAsUser: 50000
   fsGroup: 1001
-
+postgresql:
+  image:
+    repository: bitnamilegacy/postgresql
 images:
   airflow:
     repository: registry.gitlab.com/...
@@ -237,7 +241,7 @@ apiServer:
 
     import os
     import requests
-    from flask_appbuilder.security.manager import AUTH_OAUTH
+    from flask_appbuilder.security.manager import AUTH_OAUTH, AUTH_DB
     from airflow.providers.fab.auth_manager.security_manager.override import FabAirflowSecurityManagerOverride
 
     basedir = os.path.abspath(os.path.dirname(__file__))
@@ -245,7 +249,8 @@ apiServer:
     # Flask-WTF flag for CSRF
     WTF_CSRF_ENABLED = True
 
-    AUTH_TYPE = AUTH_OAUTH
+    # AUTH_TYPE = AUTH_OAUTH
+    AUTH_TYPE = AUTH_DB
     OAUTH_PROVIDERS = [{
         'name':'dsm',
         'token_key':'access_token',
@@ -291,7 +296,7 @@ apiServer:
                 return parsed_token
             return {}
 
-    SECURITY_MANAGER_CLASS = CustomSecurity
+    # SECURITY_MANAGER_CLASS = CustomSecurity
     AUTH_USER_REGISTRATION = True
     AUTH_ROLES_SYNC_AT_LOGIN = True
     AUTH_USER_REGISTRATION_ROLE = "Admin"
@@ -476,3 +481,35 @@ dsm-services==0.0.13
   - DSM_EMAIL_URI [str] : https://email-service.data.storemesh.com
   - DSM_EMAIL_APIKEY [str] : ApiKey for dsm email services
   - ALERT_EMAILS [array[str]] : Email for notice if pipeline error eg ["sothana@mail.com"]
+
+# If error
+```log
+File "/home/airflow/.local/lib/python3.12/site-packages/airflow/providers/fab/auth_manager/models/__init__.py", line 287, in perms
+    (perm.action.name, perm.resource.name) for role in self.roles for perm in role.permissions
+     ^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'name'
+```
+```py
+import pandas as pd
+import os
+import sqlalchemy
+
+con = os.environ.get('AIRFLOW_CONN_AIRFLOW_DB')
+eng = sqlalchemy.create_engine(con)
+conn = eng.raw_connection()
+
+pd.read_sql_query("SELECT * FROM pg_catalog.pg_tables", conn)
+
+pd.read_sql_query("""
+SELECT * FROM ab_permission_view
+WHERE permission_id IS NULL
+""", conn)
+
+cur = conn.cursor()
+cur.execute("""
+DELETE FROM ab_permission_view
+WHERE permission_id IS NULL
+""")
+
+conn.commit()
+```
