@@ -31,3 +31,19 @@ ON CLUSTER default
 GRANT SELECT ON default.<table_name> TO <username> 
 ON CLUSTER default
 ```
+
+## create table on cluster
+- create table
+```
+CREATE TABLE IF NOT EXISTS <tablename> ON CLUSTER default
+(
+    `<column_name>` <data_type>,
+    ...
+)
+ENGINE = ReplicatedMergeTree(
+    '/clickhouse/tables/{shard}/<tablename>',
+    '{replica}'
+)
+PARTITION BY <partition_column>
+ORDER BY <order_column>
+```
