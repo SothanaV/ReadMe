@@ -1,7 +1,7 @@
 # Gen Copy SetNoPass SSH to server
 - gen key
 ```
-ssh-keygen -t rsa -b 4096 -f "<PATH/KEYNAME>" -N ""
+ssh-keygen -t rsa -b 4096 -N "" -f "<PATH/KEYNAME>" 
 ```
 - copy key to server
 ```
