@@ -51,3 +51,18 @@ Acquire::https::Proxy "http://[VM_IP]:8888/";
 - **To Update:** Run `sudo apt update`.
 - **To Disable:** If the VM is off, comment out the lines in `/etc/apt/apt.conf.d/99proxy` using `#`.
 - **Check Ports:** Ensure the VM allows traffic on port **8888** (`sudo ufw allow 8888`).
+
+
+# Alternative: The SSH Tunnel (Quickest)
+
+1. From your laptop, run:
+```
+ssh -D 1080 user@vm-ip
+```
+(Keep this terminal open)
+
+2. On the laptop, configure apt to use the SOCKS proxy:
+
+```
+sudo apt -o Acquire::http::Proxy="socks5h://127.0.0.1:1080/" update
+```
