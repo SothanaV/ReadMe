@@ -56,3 +56,14 @@ After restart, go to **Administration > Marketplace > Installed** to confirm the
 | [sonar-kotlin](https://github.com/SonarSource/sonar-kotlin) | Kotlin language support |
 | [sonar-ansible](https://github.com/sbaudoin/sonar-ansible) | Ansible YAML linting |
 | [sonar-dependency-check](https://github.com/dependency-check/dependency-check-sonar-plugin) | OWASP dependency vulnerability scanning |
+
+
+# How to activate cxx
+
+1. go to sonarqube ui
+2. copy default profile to custom profile
+    - Quality Profiles > filter by `cxx` > Sonar way 
+    - 3dot > copy > entername > `cxx2`
+3. set cxx2 as defaukt
+    - Quality Profiles > filter by `cxx`
+    - `cxx2` 3dot > set default
