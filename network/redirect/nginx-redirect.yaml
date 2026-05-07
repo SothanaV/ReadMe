@@ -1,0 +1,68 @@
+---
+# 1. ConfigMap for NGINX Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-redirect-config
+data:
+  default.conf: |
+    server {
+        listen 3000;
+        # Replace with your domain name
+        server_name _;
+
+        # Redirect everything to Grafana
+        # 301 means Permanent Redirect. Use 302 for Temporary.
+        # $request_uri appends any paths (e.g., your-domain.com:3000/login -> your-domain.com/grafana/login)
+        location / {
+            # Replace YOUR_DOMAIN with your actual domain
+            return 301 https://YOUR_DOMAIN/grafana$request_uri;
+        }
+    }
+
+---
+# 2. Deployment to run NGINX
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-redirect
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-redirect
+  template:
+    metadata:
+      labels:
+        app: nginx-redirect
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 3000
+        volumeMounts:
+        - name: nginx-config-volume
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
+      volumes:
+      - name: nginx-config-volume
+        configMap:
+          name: nginx-redirect-config
+
+---
+# 3. Service to expose Port 3000
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-redirect-service
+spec:
+  # Use LoadBalancer if you are on a cloud provider (AWS/GCP/Azure)
+  # Use NodePort or ClusterIP depending on your specific networking setup
+  type: LoadBalancer 
+  selector:
+    app: nginx-redirect
+  ports:
+  - protocol: TCP
+    port: 3000
+    targetPort: 3000
