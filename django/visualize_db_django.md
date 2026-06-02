@@ -1,37 +1,61 @@
-# Visuzlize database schema django
+# Visualize Database Schema in Django
 
-install graphviz
-1. install native ubuntu/linux
-```
+## Table of Contents
+
+- [Install System Dependencies](#install-system-dependencies)
+- [Install Python Packages](#install-python-packages)
+- [Configure Django](#configure-django)
+- [Generate Schema Diagrams](#generate-schema-diagrams)
+
+---
+
+## Install System Dependencies
+
+### Ubuntu / Linux (native)
+
+```bash
 sudo apt install graphviz
 ```
 
-2. add this in Dockerfile
+### Dockerfile
 
 ```dockerfile
-...
-RUN apt install -y graphviz
-...
+RUN apt-get install -y graphviz
 ```
 
-install packet
-```
+---
+
+## Install Python Packages
+
+```bash
 pip install django-extensions pydotplus
 ```
 
-edit in settings.py
-```
-INSTALLED_APPS = [ 
-    ...
+---
+
+## Configure Django
+
+Add `django_extensions` to `INSTALLED_APPS` in `settings.py`:
+
+```python
+INSTALLED_APPS = [
+    # ...
     'django_extensions',
 ]
 ```
 
-use
-```
-# all sechme
-python manage.py graph_models -a -g -o <imagefile_name.png>
+---
 
-# some app
-python manage.py graph_models <app1 app2> -o app1_app2.png
+## Generate Schema Diagrams
+
+Export the full schema (all apps):
+
+```bash
+python manage.py graph_models -a -g -o <image_file_name>.png
+```
+
+Export the schema for specific apps only:
+
+```bash
+python manage.py graph_models <app1> <app2> -o app1_app2.png
 ```

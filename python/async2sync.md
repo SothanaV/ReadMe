@@ -1,11 +1,23 @@
-# python async function run in sync and exists loop fastapi/fastmcp/openwebui-pipeline
+# Running Async Functions Synchronously in FastAPI / FastMCP / OpenWebUI Pipelines
 
-```py
+When an async coroutine must be called from a synchronous context (e.g. inside an OpenWebUI Pipeline `__init__`) and an event loop is already running, `asyncio.run()` will raise a `RuntimeError`. The pattern below creates a dedicated background event loop on a separate thread so the coroutine can be awaited safely.
+
+## Table of Contents
+
+- [Background Loop Helper](#background-loop-helper)
+- [Usage Example: MCP Tool Conversion in a Pipeline](#usage-example-mcp-tool-conversion-in-a-pipeline)
+
+---
+
+## Background Loop Helper
+
+```python
 import threading
 import asyncio
 
 _loop = None
 _loop_thread = None
+
 
 def _start_background_loop():
     global _loop, _loop_thread
@@ -21,20 +33,27 @@ def _start_background_loop():
     _loop_thread = threading.Thread(target=run_loop, daemon=True)
     _loop_thread.start()
 
+
 def run_coro_sync(coro):
     """
-    Run an async coroutine in a dedicated background loop,
-    and wait for the result synchronously.
+    Run an async coroutine in a dedicated background loop
+    and block the current (sync) thread until it completes.
     """
     _start_background_loop()
     future = asyncio.run_coroutine_threadsafe(coro, _loop)
-    return future.result()  # blocks current (sync) thread until done
+    return future.result()
+```
 
+---
+
+## Usage Example: MCP Tool Conversion in a Pipeline
+
+```python
 async def convert_mcp_tools(client):
     tools = []
     async with client:
         for t in await client.list_tools():
-            # Extract tool args
+            # Extract tool argument schema
             inputs = {k: v for k, v in t.inputSchema["properties"].items()}
 
             class _Tool:
@@ -60,13 +79,15 @@ async def convert_mcp_tools(client):
                 )
             )
     return tools
+
+
 class Pipeline:
-    ...
+    # ...
     def __init__(self):
         self.name = "RCA Analyzer"
-        ...
-        self.client = Client("http://<mcp server>/mcp")
+        # ...
+        self.client = Client("http://<mcp_server>/mcp")
         self.tools = run_coro_sync(convert_mcp_tools(self.client))
         print(self.tools)
-        ...
+        # ...
 ```

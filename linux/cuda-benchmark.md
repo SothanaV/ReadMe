@@ -1,35 +1,70 @@
-# Benchmark GPU
-- requirement
-    - nvidia gpu
-    - nvidia driver
-    - docker
-    - nvidia-docker
+# GPU Benchmark with CUDA
 
-- run nvidia-docker
+Benchmark an NVIDIA GPU using the CUBLAS matrix multiplication sample from the CUDA Samples repository.
+
+## Table of Contents
+
+- [Requirements](#requirements)
+- [Run the CUDA Container](#run-the-cuda-container)
+- [Install Build Dependencies](#install-build-dependencies)
+- [Clone CUDA Samples](#clone-cuda-samples)
+- [Build and Run the Benchmark](#build-and-run-the-benchmark)
+- [Example Output](#example-output)
+
+---
+
+## Requirements
+
+- NVIDIA GPU
+- NVIDIA driver installed on the host
+- Docker
+- NVIDIA Container Toolkit (`nvidia-docker`)
+
+---
+
+## Run the CUDA Container
+
+Launch an interactive CUDA development container with GPU access:
+
 ```bash
-docker  run --rm -it --gpus all nvidia/cuda:12.6.3-cudnn-devel-ubuntu24.04
+docker run --rm -it --gpus all nvidia/cuda:12.6.3-cudnn-devel-ubuntu24.04
 ```
 
-- update and install package
+---
+
+## Install Build Dependencies
+
+Inside the container, install Git and the C++ build tools:
+
 ```bash
 apt update && apt install -y git build-essential
 ```
 
-- clone repo
+---
+
+## Clone CUDA Samples
+
 ```bash
 git clone https://github.com/NVIDIA/cuda-samples.git
 ```
 
-- run benchmark
+---
+
+## Build and Run the Benchmark
+
+Navigate to the CUBLAS matrix multiplication sample, build it, and run it:
+
 ```bash
 cd cuda-samples/Samples/4_CUDA_Libraries/matrixMulCUBLAS
 make
 ./matrixMulCUBLAS
 ```
 
-- output like this
-```bash
-root@5251c11c5cdc:/cuda-samples/Samples/4_CUDA_Libraries/matrixMulCUBLAS# ./matrixMulCUBLAS
+---
+
+## Example Output
+
+```text
 [Matrix Multiply CUBLAS] - Starting...
 GPU Device 0: "Volta" with compute capability 7.0
 
@@ -43,3 +78,5 @@ Comparing CUBLAS Matrix Multiply with CPU results: PASS
 
 NOTE: The CUDA Samples are not meant for performance measurements. Results may vary when GPU Boost is enabled.
 ```
+
+**Key result:** 5,333 GFlop/s on a Tesla V100-SXM2-32GB (Volta, compute capability 7.0).

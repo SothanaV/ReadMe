@@ -1,68 +1,102 @@
 # VM Proxy Setup Guide
 
-This guide explains how to bypass a host-level firewall by routing the host's `apt` traffic through a Virtual Machine (VM) that has internet access.
+Route a host machine's `apt` traffic through a Virtual Machine (VM) that has internet access, bypassing a host-level firewall.
+
+## Table of Contents
+
+- [Option A: Tinyproxy (HTTP Proxy)](#option-a-tinyproxy-http-proxy)
+  - [1. On the VM (Gateway)](#1-on-the-vm-gateway)
+  - [2. On the Host (Client)](#2-on-the-host-client)
+  - [Usage and Troubleshooting](#usage-and-troubleshooting)
+- [Option B: SSH SOCKS Tunnel (Quickest)](#option-b-ssh-socks-tunnel-quickest)
 
 ---
 
-## 1. On the Virtual Machine (The Gateway)
-Install and configure `tinyproxy` to act as the middleman.
+## Option A: Tinyproxy (HTTP Proxy)
 
-### Install Tinyproxy
+### 1. On the VM (Gateway)
+
+Install and configure `tinyproxy` to act as the proxy server.
+
+#### Install Tinyproxy
+
 ```bash
 sudo apt update && sudo apt install tinyproxy -y
 ```
 
-### Configure Access
-Edit `/etc/tinyproxy/tinyproxy.conf`:
+#### Configure Access
+
+Edit the Tinyproxy configuration file:
+
 ```bash
 sudo nano /etc/tinyproxy/tinyproxy.conf
 ```
-Find the **Allow** section and add your laptop's IP:
+
+Find the **Allow** section and add the host machine's IP address:
+
 ```text
 Allow 127.0.0.1
-Allow [YOUR_LAPTOP_IP]
+Allow <HOST_IP>
 ```
 
-### Restart Service
+#### Restart the Service
+
 ```bash
 sudo systemctl restart tinyproxy
 ```
 
+Allow the proxy port through the firewall:
+
+```bash
+sudo ufw allow 8888
+```
+
 ---
 
-## 2. On the Laptop (The Client)
-Configure `apt` to use the VM as a proxy.
+### 2. On the Host (Client)
 
-### Create Config File
+Configure `apt` to route traffic through the VM proxy.
+
+#### Create the apt Proxy Config File
+
 ```bash
 sudo nano /etc/apt/apt.conf.d/99proxy
 ```
 
-### Add Proxy Settings
-Replace `[VM_IP]` with the actual IP address of your VM:
+#### Add Proxy Settings
+
+Replace `<VM_IP>` with the actual IP address of the VM:
+
 ```text
-Acquire::http::Proxy "http://[VM_IP]:8888/";
-Acquire::https::Proxy "http://[VM_IP]:8888/";
+Acquire::http::Proxy "http://<VM_IP>:8888/";
+Acquire::https::Proxy "http://<VM_IP>:8888/";
 ```
 
 ---
 
-## 3. Usage & Troubleshooting
-- **To Update:** Run `sudo apt update`.
-- **To Disable:** If the VM is off, comment out the lines in `/etc/apt/apt.conf.d/99proxy` using `#`.
-- **Check Ports:** Ensure the VM allows traffic on port **8888** (`sudo ufw allow 8888`).
+### Usage and Troubleshooting
 
+- **Update packages:** Run `sudo apt update` as normal; traffic is routed through the VM.
+- **Disable the proxy:** Comment out the lines in `/etc/apt/apt.conf.d/99proxy` with `#` when the VM is off.
+- **Check connectivity:** Ensure port `8888` is open on the VM with `sudo ufw allow 8888`.
+- **Check Tinyproxy logs:** `sudo journalctl -u tinyproxy -f`
 
-# Alternative: The SSH Tunnel (Quickest)
+---
 
-1. From your laptop, run:
+## Option B: SSH SOCKS Tunnel (Quickest)
+
+No additional software required on the VM — only an SSH server.
+
+**Step 1:** From the host machine, open an SSH SOCKS5 tunnel to the VM (keep this terminal open):
+
+```bash
+ssh -D 1080 <user>@<vm-ip>
 ```
-ssh -D 1080 user@vm-ip
-```
-(Keep this terminal open)
 
-2. On the laptop, configure apt to use the SOCKS proxy:
+**Step 2:** On the host, run `apt` through the SOCKS5 tunnel:
 
-```
+```bash
 sudo apt -o Acquire::http::Proxy="socks5h://127.0.0.1:1080/" update
 ```
+
+> `socks5h` means DNS resolution is also done through the tunnel, which avoids DNS leaks.

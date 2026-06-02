@@ -1,24 +1,45 @@
 # SSH Tools
-- tools for help easy ssh
 
-0. config `$HOME/.ssh/config"`
-example 
-```
-...
+A helper script that reads `~/.ssh/config` and presents a numbered menu to quickly SSH into a configured host.
+
+## Table of Contents
+
+- [Configure SSH Hosts](#configure-ssh-hosts)
+- [Create the Shell Script](#create-the-shell-script)
+- [Make the Script Executable](#make-the-script-executable)
+- [Run the Script](#run-the-script)
+- [Optional: Add to PATH](#optional-add-to-path)
+
+---
+
+## Configure SSH Hosts
+
+Add your hosts to `~/.ssh/config`:
+
+```text
 Host home-proxy
     HostName 192.168.68.117
     IdentityFile ~/Desktop/ssh/home/home
     User serveradmin
-...
+
+Host work-server
+    HostName 10.0.1.50
+    IdentityFile ~/.ssh/id_ed25519
+    User deploy
 ```
 
-1. create shell script eg `/Users/sothanav/Desktop/ssh/bin`
+---
+
+## Create the Shell Script
+
+Create the script at a convenient location, for example `~/Desktop/ssh/bin/sshpick`:
+
 ```bash
 #!/usr/bin/env bash
 
 CONFIG="$HOME/.ssh/config"
 
-# Extract hosts (ignores wildcards, Match blocks, includes only Host entries)
+# Extract hosts (ignores wildcards, Match blocks; includes only Host entries)
 HOSTS=$(grep -E '^Host ' "$CONFIG" | grep -v '[*?]' | awk '{for(i=2;i<=NF;i++) print $i}')
 
 if [ -z "$HOSTS" ]; then
@@ -35,7 +56,7 @@ for host in $HOSTS; do
     ((i++))
 done
 
-read -p "Select host number to SSH: " choice
+read -rp "Select host number to SSH into: " choice
 
 if [ -z "${MAP[$choice]}" ]; then
     echo "Invalid choice"
@@ -45,22 +66,35 @@ fi
 ssh "${MAP[$choice]}"
 ```
 
-2. change to executeable
+---
+
+## Make the Script Executable
+
 ```bash
-chmod 700 /Users/sothanav/Desktop/ssh/bin
+chmod 700 ~/Desktop/ssh/bin/sshpick
 ```
 
-3. use it's
+---
 
-./shell
+## Run the Script
 
-## Optional
-add to path
-```
-echo 'export PATH="/Users/sothanav/Desktop/ssh/bin:$PATH"' >> $HOME/.zshrc
+```bash
+~/Desktop/ssh/bin/sshpick
 ```
 
-can use every where
+---
+
+## Optional: Add to PATH
+
+Add the script directory to your shell PATH so you can run `sshpick` from anywhere:
+
+```bash
+echo 'export PATH="$HOME/Desktop/ssh/bin:$PATH"' >> "$HOME/.zshrc"
+source "$HOME/.zshrc"
 ```
-shell
+
+Then simply run:
+
+```bash
+sshpick
 ```

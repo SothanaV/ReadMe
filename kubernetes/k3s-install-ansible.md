@@ -1,34 +1,49 @@
-# K3S install using ansible
-required 
-- python
-- ssh via key [ssh-key-gen.md](/linux/ssh-key-gen.md)
-- user as root permission
+# K3s Installation Using Ansible
 
+## Prerequisites
 
-0. install ansible
-```
+- Python 3 installed on the control machine
+- SSH access via key-based authentication to all target nodes ([ssh-key-gen guide](/linux/ssh-key-gen.md))
+- A user with root (sudo) permissions on all target nodes
+
+## Table of Contents
+
+- [Step 0: Install Ansible](#step-0-install-ansible)
+- [Step 1: Clone the K3s Ansible Repository](#step-1-clone-the-k3s-ansible-repository)
+- [Step 2: Configure the Inventory](#step-2-configure-the-inventory)
+- [Step 3: Run the Playbook](#step-3-run-the-playbook)
+
+## Step 0: Install Ansible
+
+Create a Python virtual environment and install Ansible:
+
+```bash
 python3 -m venv env
 source env/bin/activate
 pip install ansible
 ```
 
-1. clone repo
-```
+## Step 1: Clone the K3s Ansible Repository
+
+```bash
 git clone https://github.com/k3s-io/k3s-ansible.git
 cd k3s-ansible
 ```
 
-2. edit `inventory.yml`
+## Step 2: Configure the Inventory
+
+Copy the sample inventory and generate a secure token:
+
 ```bash
 cp inventory-sample.yml inventory.yml
 
-# create token
+# Generate a random cluster token
 openssl rand -base64 64
-
 ```
 
-- edit
-```yml
+Edit `inventory.yml` with your node IPs, credentials, and the generated token:
+
+```yaml
 ---
 k3s_cluster:
   children:
@@ -42,7 +57,6 @@ k3s_cluster:
         10.16.2.31:
         10.16.2.32:
 
-  # Required Vars
   vars:
     ansible_port: 22
     ansible_user: admin
@@ -52,12 +66,16 @@ k3s_cluster:
     api_endpoint: "{{ hostvars[groups['server'][0]]['ansible_host'] | default(groups['server'][0]) }}"
 ```
 
-3. install
-- install
-    ```
-    ansible-playbook playbooks/site.yml -i inventory.yml
-    ```
-- upgrade
-    ```
-    ansible-playbook playbooks/upgrade.yml -i inventory.yml
-    ```
+## Step 3: Run the Playbook
+
+### Install
+
+```bash
+ansible-playbook playbooks/site.yml -i inventory.yml
+```
+
+### Upgrade
+
+```bash
+ansible-playbook playbooks/upgrade.yml -i inventory.yml
+```

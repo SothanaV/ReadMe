@@ -1,33 +1,56 @@
-# How to Kubenetes Ingress use service in other namespace
-1. create new service `service.yml`
-```yml
+# Kubernetes Ingress: Routing to a Service in Another Namespace
+
+Kubernetes Ingress rules are namespace-scoped, so they cannot directly reference a Service in a different namespace. The solution is to create an `ExternalName` Service in the Ingress namespace that acts as a proxy to the target Service in the other namespace.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Step 1: Create an ExternalName Service](#step-1-create-an-externalname-service)
+- [Step 2: Create or Update the Ingress](#step-2-create-or-update-the-ingress)
+
+## Overview
+
+The approach uses a Kubernetes `ExternalName` Service as a bridge between namespaces. The Ingress in namespace `dataplatform` references a local Service that resolves to the fully qualified cluster DNS name of the upstream Service in namespace `vquery`.
+
+## Step 1: Create an ExternalName Service
+
+Create `service.yml` in the Ingress namespace. The `externalName` field must be the fully qualified in-cluster DNS name of the target Service.
+
+```yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: clickhouse # servicename
-  namespace: dataplatform # namespace to ingress
+  name: clickhouse
+  namespace: dataplatform   # namespace where the Ingress lives
 spec:
+  type: ExternalName
+  externalName: clickhouse.vquery.svc.cluster.local  # target service in another namespace
+  sessionAffinity: None
   ports:
     - protocol: TCP
       port: 8123
       targetPort: 8123
-  type: ExternalName
-  sessionAffinity: None
-  externalName: clickhouse.vquery.svc.cluster.local # endpoint to use service on othernamespace
 ```
-- apply it's
-```
+
+Apply the Service:
+
+```bash
 kubectl apply -f service.yml
 ```
 
-2. edit/create ingress `ingress.yml`
-```yml
+## Step 2: Create or Update the Ingress
+
+Create `ingress.yml`. The Ingress routes `/clickhouse` traffic to the `ExternalName` Service created above.
+
+```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: query-service
   namespace: dataplatform
-  ingressClassName: nginx
+  annotations:
+    ingressClassName: nginx
+spec:
   tls:
     - hosts:
         - api-service.xx.yy.com
@@ -50,10 +73,10 @@ metadata:
                 name: clickhouse
                 port:
                   number: 8123
-
 ```
 
-- apply it's
-```
+Apply the Ingress:
+
+```bash
 kubectl apply -f ingress.yml
 ```

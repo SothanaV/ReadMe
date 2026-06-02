@@ -1,7 +1,31 @@
-# Kedro Airflow k8s
-## Prepair kedro airflow
-1. create `requirements-airflow.txt`
-```
+# Kedro + Airflow 2.10.x on Kubernetes
+
+Deploy a Kedro pipeline as an Airflow DAG running on Kubernetes using the `KubernetesExecutor` and `ExternalPythonOperator` with a dedicated virtual environment.
+
+## Table of Contents
+
+- [Part 1: Prepare the Kedro Airflow Project](#part-1-prepare-the-kedro-airflow-project)
+  - [1. Create requirements-airflow.txt](#1-create-requirements-airflowtxt)
+  - [2. Create the Dockerfile](#2-create-the-dockerfile)
+  - [3. Create the DAG Jinja Template](#3-create-the-dag-jinja-template)
+  - [4. Generate the DAG](#4-generate-the-dag)
+  - [5. Build the Docker Image](#5-build-the-docker-image)
+- [Part 2: Deploy on Kubernetes with Helm](#part-2-deploy-on-kubernetes-with-helm)
+  - [0. Create the GitLab Registry Secret](#0-create-the-gitlab-registry-secret)
+  - [1. Add the Airflow Helm Repository](#1-add-the-airflow-helm-repository)
+  - [2. Check Available Versions](#2-check-available-versions)
+  - [3. Create Helm Values File](#3-create-helm-values-file)
+  - [4. Install or Upgrade](#4-install-or-upgrade)
+  - [5. Edit the Airflow ConfigMap](#5-edit-the-airflow-configmap)
+- [Troubleshooting](#troubleshooting)
+
+---
+
+## Part 1: Prepare the Kedro Airflow Project
+
+### 1. Create requirements-airflow.txt
+
+```text
 asyncpg
 apache-airflow-providers-fab
 psycopg2-binary
@@ -9,8 +33,11 @@ pendulum
 apache-airflow-providers-cncf-kubernetes
 ```
 
-2. create `Dockerfile`
-```Dockerfile
+### 2. Create the Dockerfile
+
+The image bundles Airflow, the pipeline code, and a separate virtual environment used by `ExternalPythonOperator` to run Kedro nodes in isolation.
+
+```dockerfile
 FROM apache/airflow:slim-2.10.5-python3.12
 
 USER root
@@ -28,7 +55,7 @@ RUN pip install --no-cache-dir -r /requirements-airflow.txt
 COPY ./etl-pipeline/requirements.txt /requirements.txt
 RUN pip install virtualenv
 RUN python -m venv /home/airflow/venv && \
-    source /home/airflow/venv/bin/activate &&\
+    source /home/airflow/venv/bin/activate && \
     pip install -r /requirements.txt && \
     ls /home/airflow/venv/bin/activate
 
@@ -40,8 +67,11 @@ RUN chmod -R 777 /opt/airflow/dags
 USER airflow
 ```
 
-3. copy `dags-template.j2` along side `project.toml`
-```sh
+### 3. Create the DAG Jinja Template
+
+Save the following as `dags-template.j2` alongside `pyproject.toml`. This template is rendered by `kedro airflow create` to produce a DAG file.
+
+```python
 from __future__ import annotations
 
 from datetime import datetime, timedelta
@@ -49,6 +79,7 @@ from pathlib import Path
 
 from airflow import DAG
 from airflow.operators.python import ExternalPythonOperator
+
 
 def kedro_run(
     package_name: str,
@@ -71,8 +102,8 @@ def kedro_run(
 
     configure_project(package_name)
     session = KedroSession.create(
-        project_path, 
-        env=env, 
+        project_path,
+        env=env,
         conf_source=conf_source,
         extra_params={
             'etl_date': kwargs['ds']
@@ -82,6 +113,7 @@ def kedro_run(
         node_name = [node_name]
     session.run(pipeline_name, node_names=node_name)
 
+
 venv_cache_path = "/home/airflow/venv/"
 project_path = "/opt/airflow/dags"
 env = "local"
@@ -89,7 +121,7 @@ conf_source = "/opt/airflow/dags/conf"
 package_name = "{{ package_name }}"
 pipeline_name = "{{ pipeline_name }}"
 
-        
+
 with DAG(
     dag_id="{{ dag_name | safe | slugify }}",
     start_date=datetime({{ start_date | default([2023, 1, 1]) | join(",")}}),
@@ -97,7 +129,6 @@ with DAG(
     # https://airflow.apache.org/docs/stable/scheduler.html#dag-runs
     schedule_interval="{{ schedule_interval | default('@once') }}",
     catchup={{ catchup | default(False) }},
-    # Default settings applied to all tasks
     default_args=dict(
         owner="{{ owner | default('airflow') }}",
         depends_on_past={{ depends_on_past | default(False) }},
@@ -132,17 +163,28 @@ with DAG(
     {% endfor %}
 ```
 
-4. create DAG
+### 4. Generate the DAG
+
+```bash
+kedro airflow create \
+  --target-dir ./airflow_dags/ \
+  --jinja-file ./dags-template.j2 \
+  --pipeline <PIPELINE_NAME>
 ```
-kedro airflow create --target-dir ./airflow_dags/ --jinja-file ./dags-template.j2 --pipeline <PIPELINE_NAME>
-```
 
-5. build docker image
+### 5. Build the Docker Image
 
+Build and push using your preferred method (manual `docker build` or CI/CD pipeline).
 
-## deploy on k8s using helm
-0. create gitlab secret `gitlab.yml`
-```yml
+---
+
+## Part 2: Deploy on Kubernetes with Helm
+
+### 0. Create the GitLab Registry Secret
+
+Create `gitlab.yml` with your base64-encoded Docker config JSON:
+
+```yaml
 apiVersion: v1
 kind: Secret
 type: kubernetes.io/dockerconfigjson
@@ -153,93 +195,118 @@ data:
   .dockerconfigjson: >-
     ewogICJhdXRocyI6IHsKICAgICJyZWdpc3RyeS5naXRsYWIuY29tIjogewogICAgICAidXNlcm5hbWUiOiAiZGVwbG95IiwKICAgICAgInBh....
 ```
-```
+
+```bash
 kubectl apply -f gitlab.yml
 ```
-1. add airflow repo
-```
+
+### 1. Add the Airflow Helm Repository
+
+```bash
 helm repo add apache-airflow https://airflow.apache.org
 helm repo update
 ```
 
-2. search chech helm and airflow version
-```
+### 2. Check Available Versions
+
+```bash
 helm search repo apache-airflow/airflow --versions
 ```
-```
-NAME                    CHART VERSION   APP VERSION     DESCRIPTION                                       
-apache-airflow/airflow  1.18.0          3.0.2           The official Helm chart to deploy Apache Airflo...
-apache-airflow/airflow  1.17.0          3.0.2           The official Helm chart to deploy Apache Airflo...
-apache-airflow/airflow  1.16.0          2.10.5          The official Helm chart to deploy Apache Airflo...
-apache-airflow/airflow  1.15.0          2.9.3           The official Helm chart to deploy Apache Airflo...
+
+Example output:
+
+```text
+NAME                    CHART VERSION   APP VERSION     DESCRIPTION
+apache-airflow/airflow  1.18.0          3.0.2           The official Helm chart to deploy Apache Airflow
+apache-airflow/airflow  1.17.0          3.0.2           The official Helm chart to deploy Apache Airflow
+apache-airflow/airflow  1.16.0          2.10.5          The official Helm chart to deploy Apache Airflow
+apache-airflow/airflow  1.15.0          2.9.3           The official Helm chart to deploy Apache Airflow
 ```
 
-APP VERSION must be align docker image 
+> The `APP VERSION` in the chart must match the base image version used in your Dockerfile.
 
-3. create airflow-values.yml
-```yml
+### 3. Create Helm Values File
+
+Create `airflow-values.yml`:
+
+```yaml
 executor: KubernetesExecutor
+
 registry:
   secretName: gitlab
+
 logs:
   persistence:
     enabled: true
-    size: 10Gi  # Adjust based on your needs
+    size: 10Gi
+
 securityContext:
   runAsUser: 50000
   fsGroup: 1001
 
 images:
   airflow:
-    repository: registry.gitlab.com/...
+    repository: registry.gitlab.com/<your-group>/<your-project>
     tag: latest
     pullPolicy: Always
   useDefaultImageForMigration: true
   pod_template:
-    repository: registry.gitlab.com/...
+    repository: registry.gitlab.com/<your-group>/<your-project>
     tag: latest
     pullPolicy: Always
 ```
 
-4. install
+### 4. Install or Upgrade
 
- - first install
-    ```
-    helm install airflow apache-airflow/airflow --namespace airflow --create-namespace --version 1.16.0 -f airflow-values.yml
-    ```
+**First install:**
 
- - update
-    ```
-    helm upgrade airflow apache-airflow/airflow --namespace airflow --version 1.16.0 -f values.yml
-    ```
+```bash
+helm install airflow apache-airflow/airflow \
+  --namespace airflow \
+  --create-namespace \
+  --version 1.16.0 \
+  -f airflow-values.yml
+```
 
-    - uninstall
-    ```
-    helm uninstall airflow -n airflow
-    # delete pv
-    kubectl delete pvc --all -n airflow
-    ```
+**Upgrade:**
 
-5. edit configmap
+```bash
+helm upgrade airflow apache-airflow/airflow \
+  --namespace airflow \
+  --version 1.16.0 \
+  -f airflow-values.yml
+```
 
-    - airflow config
-    ```
-    [kubernetes]
-    ...
-    worker_container_repository = registry.gitlab.com/...
-    worker_container_tag = latest
-    image_pull_secrets = gitlab
-    image_pull_policy = Always
-    ...
-    ```
+**Uninstall:**
 
-![airflow-ui](/_asset/airflow-ui.png)
+```bash
+helm uninstall airflow -n airflow
 
-![airflow-k3s](/_asset/airflow-k3s.png)
+# Also delete persistent volume claims
+kubectl delete pvc --all -n airflow
+```
 
-### If have permission problem
-add webserver and scheduler deployment
-```yml
+### 5. Edit the Airflow ConfigMap
+
+Locate the `[kubernetes]` section in the Airflow ConfigMap and update the worker image settings:
+
+```ini
+[kubernetes]
+worker_container_repository = registry.gitlab.com/<your-group>/<your-project>
+worker_container_tag = latest
+image_pull_secrets = gitlab
+image_pull_policy = Always
+```
+
+---
+
+## Troubleshooting
+
+### Permission errors on the logs directory
+
+If the webserver or scheduler fails due to log directory ownership, add an `initContainer` to the affected deployment to fix permissions at startup:
+
+```yaml
 initContainers:
   - name: fix-log-permissions
     image: busybox
@@ -248,5 +315,5 @@ initContainers:
       - name: logs
         mountPath: /opt/airflow/logs
     securityContext:
-      runAsUser: 0 # run as root to change ownership
+      runAsUser: 0  # run as root to change ownership
 ```

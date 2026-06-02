@@ -1,22 +1,68 @@
-# I/O Test
-- install fio
-```
-apt update 
-apt install -y fio
+# I/O Performance Test with fio
+
+## Table of Contents
+
+- [Install fio](#install-fio)
+- [Create a Test File](#create-a-test-file)
+- [Run the Benchmark](#run-the-benchmark)
+- [Example Report](#example-report)
+
+---
+
+## Install fio
+
+```bash
+sudo apt update
+sudo apt install -y fio
 ```
 
-- create file
-```
+---
+
+## Create a Test File
+
+Use `dd` to pre-create a 1 GB test file on the target filesystem before running fio. This avoids measuring filesystem allocation overhead during the test.
+
+```bash
 dd if=/dev/zero of=/app/backend/data/testfile bs=1M count=1000 oflag=dsync
 ```
-- test
-```
-fio --name=hpe-csi-test --size=1G --filename=/app/backend/data/testfile --bs=4k --rw=randrw --ioengine=libaio --direct=1 --numjobs=4 --time_based --runtime=60 --group_reporting
+
+---
+
+## Run the Benchmark
+
+The command below runs a 60-second random read/write test using 4 KB blocks with 4 parallel jobs and direct I/O (bypassing the OS page cache):
+
+```bash
+fio \
+  --name=hpe-csi-test \
+  --size=1G \
+  --filename=/app/backend/data/testfile \
+  --bs=4k \
+  --rw=randrw \
+  --ioengine=libaio \
+  --direct=1 \
+  --numjobs=4 \
+  --time_based \
+  --runtime=60 \
+  --group_reporting
 ```
 
+**Key parameters:**
 
-## example report
-```
+| Parameter           | Description                                      |
+|---------------------|--------------------------------------------------|
+| `--bs=4k`           | Block size of 4 KB (typical database block size) |
+| `--rw=randrw`       | Mixed random reads and writes                    |
+| `--ioengine=libaio` | Linux native async I/O engine                    |
+| `--direct=1`        | Bypass the OS page cache (raw device speed)      |
+| `--numjobs=4`       | Run 4 parallel jobs                              |
+| `--runtime=60`      | Run for 60 seconds                               |
+
+---
+
+## Example Report
+
+```text
 hpe-test-macbook-air: (g=0): rw=randrw, bs=(R) 4096B-4096B, (W) 4096B-4096B, (T) 4096B-4096B, ioengine=psync, iodepth=1
 ...
 fio-3.39
@@ -62,3 +108,11 @@ Run status group 0 (all jobs):
    READ: bw=49.4MiB/s (51.8MB/s), 49.4MiB/s-49.4MiB/s (51.8MB/s-51.8MB/s), io=2962MiB (3106MB), run=60001-60001msec
   WRITE: bw=49.5MiB/s (51.9MB/s), 49.5MiB/s-49.5MiB/s (51.9MB/s-51.9MB/s), io=2968MiB (3112MB), run=60001-60001msec
 ```
+
+**Summary of key results:**
+
+| Metric        | Read              | Write             |
+|---------------|-------------------|-------------------|
+| IOPS          | ~12,600           | ~12,700           |
+| Bandwidth     | 49.4 MiB/s        | 49.5 MiB/s        |
+| Avg latency   | ~141 µs           | ~174 µs           |

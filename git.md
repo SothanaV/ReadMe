@@ -1,25 +1,29 @@
 # Git Usage Guide
-## วิธีใช้ Git
 
 ## Table of Contents
+
 - [Clone](#clone)
 - [Push](#push)
 - [Pull](#pull)
 - [Checkout](#checkout)
 - [Branch](#branch)
 - [Merge](#merge)
-- [Log & Diff](#log--diff)
-- [Reset & Revert](#reset--revert)
+- [Log and Diff](#log-and-diff)
+- [Reset and Revert](#reset-and-revert)
 - [Stash](#stash)
 - [Tag](#tag)
 - [Remote](#remote)
 - [Configure](#configure)
 - [Useful Commands](#useful-commands)
+- [Git Flow](#git-flow)
+- [References](#references)
 
 ---
 
 ## Clone
-#### ดึงโค้ดจาก GitHub หรือ GitLab
+
+Clone a repository from GitHub or GitLab:
+
 ```bash
 git clone <git-url>
 ```
@@ -27,261 +31,285 @@ git clone <git-url>
 ---
 
 ## Push
-#### ส่งโค้ดขึ้น Git
+
+Stage, commit, and push changes to a remote repository:
+
 ```bash
-# ตรวจสอบสถานะ / Check status
+# Check working tree status
 git status
 
-# เพิ่มไฟล์ / Add files
-git add <file1> <file2> ...   # เพิ่มทีละไฟล์ / Add each file
-git add -A                    # เพิ่มทุกไฟล์ / Add all files
-git add *.py                  # เพิ่มไฟล์ที่ตรง pattern / Add files matching pattern
+# Stage files
+git add <file1> <file2>   # Add specific files
+git add -A                # Add all changes
+git add *.py              # Add files matching a pattern
 
-# Commit / บันทึกการเปลี่ยนแปลง
+# Commit staged changes
 git commit -m "<message>"
 
-# Push ขึ้น Git
+# Push to remote
 git push
-git push origin <branch-name>  # Push ไปยัง specific branch
+git push origin <branch-name>   # Push to a specific branch
 ```
 
 ---
 
 ## Pull
-#### ดึงโค้ดจาก Git
+
+Fetch and merge changes from a remote repository:
+
 ```bash
 git pull
-git pull origin <branch-name>  # Pull จาก specific branch
+git pull origin <branch-name>   # Pull from a specific branch
 ```
 
 ---
 
 ## Checkout
-#### เปลี่ยน Branch
+
+Switch to an existing branch or create a new one:
+
 ```bash
 git checkout <branch-name>
 
-# แตก Branch ใหม่ / Create new branch
+# Create and switch to a new branch
 git checkout -b <branch-name>
 ```
 
 ---
 
 ## Branch
-#### จัดการ Branch
-```bash
-# แสดงรายการ Branch / List branches
-git branch                    # Local branches
-git branch -a                 # ทั้งหมด (local + remote)
-git branch -r                 # Remote branches
 
-# แตก Branch ใหม่ (ไม่สลับไปใช้) / Create new branch
+Manage local and remote branches:
+
+```bash
+# List branches
+git branch            # Local branches
+git branch -a         # All branches (local + remote)
+git branch -r         # Remote branches only
+
+# Create a branch without switching to it
 git branch <branch-name>
 
-# ลบ Branch / Delete branch
-git branch -d <branch-name>   # ลบถ้า merge แล้ว
-git branch -D <branch-name>   # บังคับลบ / Force delete
+# Delete a branch
+git branch -d <branch-name>   # Delete only if already merged
+git branch -D <branch-name>   # Force delete
 
-# เปลี่ยนชื่อ Branch / Rename branch
-git branch -m <new-name>      # Branch ปัจจุบัน
-git branch -m <old-name> <new-name>  # เปลี่ยนชื่อเฉพาะ
+# Rename a branch
+git branch -m <new-name>                  # Rename current branch
+git branch -m <old-name> <new-name>       # Rename a specific branch
 ```
 
 ---
 
 ## Merge
-#### รวม Branch
+
+Merge one branch into another:
+
 ```bash
-# Merge branch อื่นเข้ามา
 git checkout <target-branch>
 git merge <source-branch>
 
-# Merge แบบ no-fast-forward (เก็บ merge commit)
+# Merge with an explicit merge commit (no fast-forward)
 git merge --no-ff <source-branch>
 
-# ยกเลิก merge / Abort merge
+# Abort an in-progress merge
 git merge --abort
 ```
 
 ---
 
-## Log & Diff
-#### ดูประวัติและการเปลี่ยนแปลง
+## Log and Diff
+
+Inspect commit history and changes:
+
 ```bash
-# ดูประวัติ commit / View commit history
+# View commit history
 git log
-git log --oneline             # แบบย่อ / Short format
-git log --oneline --graph     # แสดง graph
-git log --all --graph         # ทุก branch
+git log --oneline             # Condensed one-line format
+git log --oneline --graph     # With branch graph
+git log --all --graph         # All branches with graph
 
-# ดูการเปลี่ยนแปลง / View changes
-git diff                      # การเปลี่ยนแปลงที่ยังไม่ได้ add
-git diff --staged             # การเปลี่ยนแปลงที่ add แล้ว แต่ยังไม่ได้ commit
-git diff <commit1> <commit2>  # เปรียบเทียบระหว่าง commits
+# View uncommitted changes
+git diff                      # Unstaged changes
+git diff --staged             # Staged changes not yet committed
+git diff <commit1> <commit2>  # Compare two commits
 
-# ดูรายละเอียด commit
+# Inspect a specific commit
 git show <commit-hash>
 
-# ดูประวัติของไฟล์ / View file history
+# View history for a specific file
 git log -- <file-path>
 ```
 
 ---
 
-## Reset & Revert
-#### ย้อนกลับการเปลี่ยนแปลง
+## Reset and Revert
+
+Undo changes at different levels:
+
 ```bash
-# Soft reset (เก็บการเปลี่ยนแปลงใน staging)
+# Soft reset — moves HEAD, keeps changes staged
 git reset --soft <commit-hash>
 
-# Mixed reset (เก็บใน working directory)
+# Mixed reset — moves HEAD, keeps changes in working directory (default)
 git reset --mixed <commit-hash>
 
-# Hard reset (ลบการเปลี่ยนแปลงทั้งหมด)
+# Hard reset — moves HEAD and discards all changes
 git reset --hard <commit-hash>
 
-# Revert (สร้าง commit ใหม่เพื่อย้อนกลับ)
+# Revert — creates a new commit that undoes the specified commit
 git revert <commit-hash>
 ```
 
 ---
 
 ## Stash
-#### เก็บการเปลี่ยนแปลงชั่วคราว
-```bash
-# เก็บการเปลี่ยนแปลง / Stash changes
-git stash
-git stash save "message"      # พร้อมข้อความ
 
-# ดูรายการ stash / List stashes
+Temporarily shelve changes without committing:
+
+```bash
+# Save current changes to the stash
+git stash
+git stash save "description"   # Stash with a label
+
+# List all stash entries
 git stash list
 
-# นำ stash กลับมา / Apply stash
-git stash pop                 # Apply และลบออก
-git stash apply               # Apply แต่ไม่ลบ
+# Restore stashed changes
+git stash pop           # Apply most recent stash and remove it
+git stash apply         # Apply most recent stash but keep it
 
-# ใช้ stash เฉพาะ
+# Apply a specific stash entry
 git stash apply stash@{0}
 
-# ลบ stash / Delete stash
-git stash drop stash@{0}
-git stash clear               # ลบทั้งหมด
+# Delete stash entries
+git stash drop stash@{0}   # Remove a specific entry
+git stash clear            # Remove all entries
 ```
 
 ---
 
 ## Tag
-#### กำหนด Tag
+
+Mark specific commits with version labels:
+
 ```bash
-# แสดงรายการ tag / List tags
+# List all tags
 git tag
 
-# สร้าง tag ใหม่ / Create tag
+# Create a lightweight tag
 git tag <tag-name>
-git tag -a v1.0 -m "Version 1.0"  # Annotated tag
 
-# Push tag ขึ้น remote
+# Create an annotated tag with a message
+git tag -a v1.0 -m "Version 1.0"
+
+# Push a tag to remote
 git push origin <tag-name>
-git push origin --tags        # Push ทุก tag
+git push origin --tags        # Push all tags
 
-# Checkout ที่ tag
+# Check out a tag (detached HEAD state)
 git checkout <tag-name>
 ```
 
 ---
 
 ## Remote
-#### จัดการ Remote
+
+Manage remote repository connections:
+
 ```bash
-# แสดงรายการ remote / List remotes
+# List remotes with URLs
 git remote -v
 
-# เพิ่ม remote / Add remote
+# Add a new remote
 git remote add origin <git-url>
 
-# เปลี่ยน remote URL
+# Change the URL of an existing remote
 git remote set-url origin <new-git-url>
 
-# ลบ remote / Remove remote
+# Remove a remote
 git remote remove origin
 
-# ดูสถานะ remote
+# Inspect a remote
 git remote show origin
 ```
 
 ---
 
 ## Configure
-#### การตั้งค่า Git
+
+Set up global and local Git configuration:
+
 ```bash
-# ตั้งค่า user / User configuration
+# Set user identity
 git config --global user.name "Your Name"
 git config --global user.email "your.email@example.com"
 
-# ดูการตั้งค่า / View configuration
+# View all global configuration
 git config --global --list
 
-# Cache credentials (จำรหัสผ่าน)
+# Cache credentials on disk
 git config credential.helper store
 
-# ปิด Vim mode (เมื่อ commit ต้องใส่ message)
+# Set default editor for commit messages
 git config --global core.editor "nano"
-# หรือ
-git config --global core.editor "code --wait"
+git config --global core.editor "code --wait"   # VS Code
 
-# ปิด SSL verification (ไม่แนะนำสำหรับ production)
+# Disable SSL verification (not recommended for production)
 git config --global http.sslVerify false
 
-# Line ending settings (สำหรับ Windows)
+# Handle line endings on Windows
 git config --global core.autocrlf true
 ```
 
 ---
 
 ## Useful Commands
-#### คำสั่งอื่นๆ ที่มีประโยชน์
+
 ```bash
-# ดูสถานะแบบย่อ / Short status
+# Short status output
 git status -s
 
-# ดู commit ล่าสุด / Last commit
+# Show the most recent commit
 git log -1
 
-# ดู commit ล่าสุด 5 ตัว / Last 5 commits
+# Show the last 5 commits (condensed)
 git log -5 --oneline
 
-# สร้าง .gitignore
-echo "*.pyc" >> .gitignore
-echo "__pycache__/" >> .gitignore
-
-# ดูขนาดของ repository
+# Count and display repository object sizes
 git count-objects -vH
 
-# Clean ไฟล์ที่ไม่ถูก track / ลบ untracked files
-git clean -n                  # ดูว่าจะลบอะไร (preview)
-git clean -f                  # ลบเลย / Delete
-git clean -fd                 # ลบไฟล์และ directory
+# Preview what would be removed by clean
+git clean -n
+
+# Remove untracked files
+git clean -f
+
+# Remove untracked files and directories
+git clean -fd
 ```
 
 ---
 
-## Git Flow (พื้นฐาน)
-#### ขั้นตอนการทำงานแบบพื้นฐาน
+## Git Flow
+
+A basic feature branch workflow:
+
 ```bash
-# 1. ดึงโค้ดล่าสุด
+# 1. Sync with the latest main branch
 git pull origin main
 
-# 2. แตก branch ใหม่สำหรับงาน
+# 2. Create a feature branch
 git checkout -b feature/my-feature
 
-# 3. ทำงานและ commit
+# 3. Make changes and commit
 git add .
 git commit -m "feat: add new feature"
 
-# 4. Push branch ขึ้น remote
+# 4. Push the feature branch to remote
 git push origin feature/my-feature
 
-# 5. Merge กลับ main (ทำผ่าน Pull Request)
+# 5. Merge back into main (typically via a Pull Request)
 git checkout main
 git pull origin main
 git merge feature/my-feature
@@ -291,5 +319,6 @@ git push origin main
 ---
 
 ## References
+
 - [Git Official Documentation](https://git-scm.com/doc)
-- [StackOverflow - Git Credentials](https://stackoverflow.com/questions/5343068/is-there-a-way-to-cache-https-credentials-for-pushing-commits)
+- [StackOverflow — Caching Git Credentials](https://stackoverflow.com/questions/5343068/is-there-a-way-to-cache-https-credentials-for-pushing-commits)

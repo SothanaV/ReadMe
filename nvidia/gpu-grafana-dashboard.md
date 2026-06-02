@@ -1,22 +1,22 @@
-# Nvidia GPU Grafana Dashboard Monitoring
+# NVIDIA GPU Grafana Dashboard Monitoring
 
 Guide for setting up NVIDIA GPU monitoring using DCGM Exporter, Prometheus, and Grafana.
 
 ## Prerequisites
 
 - NVIDIA GPU with supported architecture
-- [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) (nvidia-docker) installed
+- [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) installed on the host
 - Docker or Docker Compose installed
 - Prometheus installed and configured
 - Grafana installed and configured
 
 ## Step 1: Deploy DCGM Exporter
 
-DCGM (Data Center GPU Manager) Exporter collects GPU metrics and exposes them via Prometheus-compatible endpoint.
-
-### Docker Compose Configuration
+DCGM (Data Center GPU Manager) Exporter collects GPU metrics and exposes them via a Prometheus-compatible endpoint.
 
 Reference: [DCGM Exporter Documentation](https://docs.nvidia.com/datacenter/dcgm/latest/gpu-telemetry/dcgm-exporter.html)
+
+### Docker Compose Configuration
 
 ```yaml
 services:
@@ -43,15 +43,15 @@ services:
 docker compose up -d
 ```
 
-### Verify Metrics Endpoint
+### Verify the Metrics Endpoint
 
 ```bash
 curl http://localhost:9400/metrics
 ```
 
-## Step 2: Configure Prometheus Scrape Target
+## Step 2: Configure Prometheus
 
-Add the DCGM exporter as a scrape target in your Prometheus configuration (`prometheus.yml`):
+Add the DCGM Exporter as a scrape target in your Prometheus configuration (`prometheus.yml`):
 
 ```yaml
 scrape_configs:
@@ -59,65 +59,64 @@ scrape_configs:
     scrape_interval: 2s
     static_configs:
       - targets:
-          - "<serverIP>:9400"
+          - "<server-ip>:9400"
 ```
 
-> Replace `<serverIP>` with the actual server or container IP address.
+Replace `<server-ip>` with the actual IP address of the host running the exporter.
 
 ### Restart Prometheus
 
 ```bash
-# If running as a container
+# If running as a Docker container
 docker restart prometheus
 
-# If using systemd
+# If managed by systemd
 sudo systemctl restart prometheus
 ```
 
-### Verify Prometheus Target
+### Verify the Prometheus Target
 
-Navigate to `http://<prometheus-ip>:9090/targets` and confirm the `nvidia-gpu` job is **UP**.
+Navigate to `http://<prometheus-ip>:9090/targets` and confirm the `nvidia-gpu` job shows a status of **UP**.
 
-## Step 3: Import Grafana Dashboard
+## Step 3: Import the Grafana Dashboard
 
 ### Option A: Import from Grafana.com
 
-1. Download the dashboard template ID: **[15117 - NVIDIA DCGM Exporter](https://grafana.com/grafana/dashboards/15117-nvidia-dcgm-exporter/)**
-2. In Grafana, go to **Dashboards → Import**
-3. Enter `15117` in the "Grafana.com Dashboard" field
-4. Click **Load**, select your data source (Prometheus), and click **Import**
+1. In Grafana, go to **Dashboards > Import**.
+2. Enter dashboard ID `15117` in the "Import via grafana.com" field.
+3. Click **Load**, select your Prometheus data source, and click **Import**.
 
-### Option B: Manual JSON Import
+Dashboard link: [15117 - NVIDIA DCGM Exporter](https://grafana.com/grafana/dashboards/15117-nvidia-dcgm-exporter/)
 
-1. Download the JSON file from the link above
-2. In Grafana, go to **Dashboards → Import**
-3. Click **Upload JSON file** and select the downloaded file
-4. Select your Prometheus data source and click **Import**
+### Option B: Import a JSON File
+
+1. Download the dashboard JSON from the link above.
+2. In Grafana, go to **Dashboards > Import**.
+3. Click **Upload JSON file** and select the downloaded file.
+4. Select your Prometheus data source and click **Import**.
 
 ## Dashboard Features
 
-The imported dashboard provides:
+The imported dashboard provides visibility into:
 
 - GPU utilization and memory usage
-- GPU temperature
+- GPU temperature and thermal throttling
 - GPU power consumption
 - GPU clock frequencies
 - ECC memory errors
-- GPU temperature and throttling info
-- NVLink metrics (if supported)
+- NVLink metrics (if supported by the GPU)
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
-| DCGM exporter fails to start | Ensure NVIDIA Container Toolkit is installed and `nvidia-smi` works on host |
-| No metrics in Prometheus | Check firewall allows port `9400`, verify target is UP in Prometheus targets |
-| Grafana shows no data | Verify Prometheus data source is correctly configured in Grafana |
-| GPU metrics not appearing | Run `nvidia-smi` on the host to verify GPU accessibility |
+| ----- | -------- |
+| DCGM Exporter fails to start | Ensure NVIDIA Container Toolkit is installed and `nvidia-smi` works on the host |
+| No metrics in Prometheus | Check that port `9400` is not blocked by a firewall; verify the target is UP in Prometheus |
+| Grafana shows no data | Verify the Prometheus data source is correctly configured in Grafana |
+| GPU metrics not appearing | Run `nvidia-smi` on the host to confirm GPU accessibility |
 
 ## References
 
-- [DCGM Exporter Docs](https://docs.nvidia.com/datacenter/dcgm/latest/gpu-telemetry/dcgm-exporter.html)
+- [DCGM Exporter Documentation](https://docs.nvidia.com/datacenter/dcgm/latest/gpu-telemetry/dcgm-exporter.html)
 - [Grafana Dashboard 15117](https://grafana.com/grafana/dashboards/15117-nvidia-dcgm-exporter/)
 - [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
-

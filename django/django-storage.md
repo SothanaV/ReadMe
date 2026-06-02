@@ -1,17 +1,32 @@
-# Django Storage on Bucket
-- install
-```
+# Django Storage on Object Storage Bucket (S3-compatible)
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Django 4.2 and Later](#django-42-and-later)
+
+---
+
+## Installation
+
+```bash
 pip install django-storages boto3
 ```
 
-- edit in `settings.py`
+---
+
+## Configuration
+
+Edit `settings.py`:
+
 ```python
 import os
 
 INSTALLED_APPS = [
-    ...
+    # ...
     'storages',
-    ...
+    # ...
 ]
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
@@ -25,12 +40,16 @@ AWS_DEFAULT_ACL = None
 AWS_S3_VERIFY = True
 ```
 
-## if django version >= 4.2
-- `DEFAULT_FILE_STORAGE` change to `STORAGES`
+---
+
+## Django 4.2 and Later
+
+The `DEFAULT_FILE_STORAGE` setting is deprecated in Django 4.2. Use the new `STORAGES` dict instead:
+
 ```python
 STORAGES = {
-    'default':{
-        'BACKEND':'storages.backends.s3boto3.S3Boto3Storage',
+    'default': {
+        'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage',
     },
     'staticfiles': {
         'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',

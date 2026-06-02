@@ -1,16 +1,40 @@
-# Django with jupyter shell plus
-- create jupyter notebook password <a href="jupyter_set_passwd.md"> Here </a>
+# Django with Jupyter Shell Plus
 
-- install django extension
+## Table of Contents
+
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Running the Shell](#running-the-shell)
+- [Docker Setup (Optional)](#docker-setup-optional)
+
+---
+
+## Prerequisites
+
+Create a Jupyter Notebook password before proceeding. See [jupyter_set_passwd.md](../python/jupyter_set_passwd.md) for instructions.
+
+---
+
+## Installation
+
+Install the `django-extensions` package:
+
+```bash
+pip install django-extensions
 ```
-    pip install django-extensions
-```
-- add config in ```settings.py```
+
+---
+
+## Configuration
+
+Add the following to `settings.py`:
+
 ```python
 INSTALLED_APPS = [
-    ...
+    # ...
     'django_extensions',
-   ...
+    # ...
 ]
 
 NOTEBOOK_ARGUMENTS = [
@@ -23,22 +47,32 @@ NOTEBOOK_ARGUMENTS = [
 ]
 ```
 
-- run jupyter django shellplus with command
-```
-    python manage.py shell_plus --notebook
+---
+
+## Running the Shell
+
+Launch Jupyter with the Django shell_plus kernel:
+
+```bash
+python manage.py shell_plus --notebook
 ```
 
-```optional if use docker```
+---
 
-```docker
-    notebook:
-        build: ./backend
-        command: sh runjupyter.sh
-        volumes: 
-            - ./backend:/backend
-            - ./jupyter_notebook_config.json:/config/jupyter_notebook_config.json
-        ports: 
-            - 8888:8888
-        env_file: 
-            - .env
+## Docker Setup (Optional)
+
+Add a notebook service to `docker-compose.yml`:
+
+```yaml
+services:
+  notebook:
+    build: ./backend
+    command: sh runjupyter.sh
+    volumes:
+      - ./backend:/backend
+      - ./jupyter_notebook_config.json:/config/jupyter_notebook_config.json
+    ports:
+      - "8888:8888"
+    env_file:
+      - .env
 ```

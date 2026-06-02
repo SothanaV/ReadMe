@@ -1,5 +1,16 @@
-# Setup extra django
-`settings.py`
+# Django Extra Setup
+
+## Table of Contents
+
+- [Django REST Framework Authentication](#django-rest-framework-authentication)
+- [Simple JWT Configuration](#simple-jwt-configuration)
+- [Custom Admin Login Page](#custom-admin-login-page)
+
+---
+
+## Django REST Framework Authentication
+
+Add the following to `settings.py`:
 
 ```python
 REST_FRAMEWORK = {
@@ -10,6 +21,10 @@ REST_FRAMEWORK = {
     ],
 }
 ```
+
+---
+
+## Simple JWT Configuration
 
 ```python
 from datetime import timedelta
@@ -30,27 +45,34 @@ SIMPLE_JWT = {
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
 
-    'UPDATE_LAST_LOGIN':True
+    'UPDATE_LAST_LOGIN': True,
 }
 ```
 
-# Custom admin login
-edit in `urls.py`
+---
+
+## Custom Admin Login Page
+
+### 1. Configure `urls.py`
+
 ```python
 from django.contrib import admin
-...
+# ...
 
 admin.site.login_template = 'admin/custom-login.html'
 admin.site.site_title = "Adhoc Import"
 admin.site.site_header = "Adhoc Import"
 
-...
+# ...
 urlpatterns = [
     path('admin/', admin.site.urls),
-    ...
+    # ...
 ]
 ```
-create file in `templates/admin/custom-login.html`
+
+### 2. Create the Template
+
+Create the file `templates/admin/custom-login.html`:
 
 ```html
 {% extends "admin/base_site.html" %}
@@ -121,11 +143,11 @@ create file in `templates/admin/custom-login.html`
 <div class="form-row">
   <hr>
   <div class="form-row" style="text-align: center;">
-    <a 
-      class="submit-row" 
+    <a
+      class="submit-row"
       style="text-align: center;"
       href="{% url 'social:begin' 'dsmauth' %}">
-      Login with Oauth2
+      Login with OAuth2
     </a>
   </div>
 </div>

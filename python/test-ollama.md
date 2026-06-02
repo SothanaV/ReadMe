@@ -1,72 +1,82 @@
-# Benchmark Ollama TPS(Token Per Second)
+# Benchmark Ollama Tokens Per Second (TPS)
 
-- install ollama
-```sh
+## Table of Contents
+
+- [Installation](#installation)
+- [Benchmark Script](#benchmark-script)
+- [Sample Output](#sample-output)
+
+---
+
+## Installation
+
+```bash
 pip install ollama
 ```
-- run python code client
-```py
+
+---
+
+## Benchmark Script
+
+```python
 from ollama import Client
+
 
 def calculate_tokens_per_sec(response):
     """
-    Calculate tokens per second from the Ollama response.
+    Calculate tokens per second from an Ollama generate response.
 
     Args:
-        response (dict): The response dictionary from Ollama's client.generate.
+        response (dict): The response dictionary from ollama.Client.generate.
 
     Returns:
-        float: Tokens per second.
+        dict: A dict containing total_tokens, total_duration_sec, and tokens_per_second.
     """
-    # Extract necessary information
     total_tokens = response.get("eval_count", 0)
-    total_duration_ns = response.get("total_duration", 1)  # Prevent division by zero
-    
-    # Convert nanoseconds to seconds
+    total_duration_ns = response.get("total_duration", 1)  # prevent division by zero
+
     total_duration_sec = total_duration_ns / 1e9
-    
-    # Calculate tokens per second
-    if total_duration_sec > 0:
-        tokens_per_sec = total_tokens / total_duration_sec
-    else:
-        tokens_per_sec = 0.0
-    
+
+    tokens_per_sec = total_tokens / total_duration_sec if total_duration_sec > 0 else 0.0
+
     return {
         "total_tokens": total_tokens,
         "total_duration_sec": total_duration_sec,
-        "tokens_per_second": tokens_per_sec
+        "tokens_per_second": tokens_per_sec,
     }
 
 
-# Example usage
 if __name__ == "__main__":
-    # Simulated response from client.generate
     client = Client("http://nginx-ollama:11434")
-    tps = []
+    tps_list = []
+
     for _ in range(5):
         response = client.generate(
             model="llama3.1:70b",
-            prompt="what is meaning of life?"
+            prompt="what is the meaning of life?",
         )
-
-        # Calculate tokens per second
         result = calculate_tokens_per_sec(response)
-        
-        # Display the result
-        print(f"Total Tokens: {result['total_tokens']}\tTotal Duration (seconds): {result['total_duration_sec']:.2f}\tTokens per Second: {result['tokens_per_second']:.2f}")
-        tps.append(result['tokens_per_second'])
-    print("-"*20)
-    print(f"Average Token Per sec : {sum(tps)/len(tps):.2f}")
+        print(
+            f"Total Tokens: {result['total_tokens']}\t"
+            f"Total Duration (seconds): {result['total_duration_sec']:.2f}\t"
+            f"Tokens per Second: {result['tokens_per_second']:.2f}"
+        )
+        tps_list.append(result['tokens_per_second'])
+
+    print("-" * 20)
+    print(f"Average Token Per Second: {sum(tps_list) / len(tps_list):.2f}")
 ```
 
-- output like this
-```bash
-root@7188c2c50eab:/backend# python test-ollama.py 
-Total Tokens: 531	Total Duration (seconds): 24.75	Tokens per Second: 21.46
-Total Tokens: 340	Total Duration (seconds): 11.29	Tokens per Second: 30.13
-Total Tokens: 456	Total Duration (seconds): 15.16	Tokens per Second: 30.07
-Total Tokens: 464	Total Duration (seconds): 15.47	Tokens per Second: 29.99
-Total Tokens: 525	Total Duration (seconds): 17.44	Tokens per Second: 30.11
+---
+
+## Sample Output
+
+```text
+Total Tokens: 531   Total Duration (seconds): 24.75   Tokens per Second: 21.46
+Total Tokens: 340   Total Duration (seconds): 11.29   Tokens per Second: 30.13
+Total Tokens: 456   Total Duration (seconds): 15.16   Tokens per Second: 30.07
+Total Tokens: 464   Total Duration (seconds): 15.47   Tokens per Second: 29.99
+Total Tokens: 525   Total Duration (seconds): 17.44   Tokens per Second: 30.11
 --------------------
-Average Token Per sec : 28.35
+Average Token Per Second: 28.35
 ```
