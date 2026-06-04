@@ -20,6 +20,7 @@ Deploy a Kedro pipeline as an Airflow DAG running on Kubernetes using the `Kuber
   - [5. Edit the Airflow ConfigMap](#5-edit-the-airflow-configmap)
 - [Email Alerts on Task Failure](#email-alerts-on-task-failure)
 - [Troubleshooting](#troubleshooting)
+- [Run Airflow Behind a Proxy](#run-airflow-behind-a-proxy)
 
 ---
 
@@ -588,4 +589,57 @@ DELETE FROM ab_permission_view
 WHERE permission_id IS NULL
 """)
 conn.commit()
+```
+
+## Run Airflow Behind a Proxy
+
+Example using subpath `airflow-temp`.
+
+### 1. Add environment variables to the API server deployment
+
+```yaml
+containers:
+  env:
+    - name: AIRFLOW__API__BASE_URL
+      value: https://your-domain.com/airflow-temp/
+    - name: FORWARDED_ALLOW_IPS
+      value: "*"
+```
+
+### 2. Update `airflow.cfg`
+
+```ini
+[core]
+execution_api_server_url = http://airflow-api-server:8080/airflow-temp/execution/
+
+[webserver]
+enable_proxy_fix = True
+base_url = https://your-domain.com/airflow-temp/
+```
+
+### 3. Create Ingress
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: airflow-api
+  namespace: airflow-temp
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - your-domain.com
+      secretName: your-tls-secret
+  rules:
+    - host: your-domain.com
+      http:
+        paths:
+          - path: /airflow-temp/
+            pathType: Prefix
+            backend:
+              service:
+                name: airflow-api-server
+                port:
+                  number: 8080
 ```
