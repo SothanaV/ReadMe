@@ -169,6 +169,7 @@ Personal reference documentation for DevOps, infrastructure, and development wor
 | ---- | ----------- |
 | [gpu-grafana-dashboard.md](nvidia/gpu-grafana-dashboard.md) | NVIDIA GPU Grafana dashboard setup |
 | [dcgmi.md](nvidia/dcgmi.md) | DCGM and dcgmi GPU monitoring |
+| [nvidia-hgx.md](nvidia/nvidia-hgx.md) | Set up an NVIDIA HGX node on Kubernetes (driver, Fabric Manager, Container Toolkit, device plugin) |
 
 ---
 
