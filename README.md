@@ -48,6 +48,7 @@ Personal reference documentation for DevOps, infrastructure, and development wor
 | [vm_proxy_setup.md](linux/vm_proxy_setup.md) | VM proxy setup (Tinyproxy / SOCKS5) |
 | [proxmox-cloudinit-vm.md](linux/proxmox-cloudinit-vm.md) | Create cloud-init VMs on Proxmox |
 | [report-server-linux.md](linux/report-server-linux.md) | Server resource reporting script |
+| [team-for-linux.md](linux/team-for-linux.md) | Install Teams for Linux (deb from GitHub releases) |
 
 ---
 
